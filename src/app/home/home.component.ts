@@ -41,7 +41,6 @@ export class HomeComponent implements OnInit {
       catchError((err) => {
         const message = 'Could not load courses';
         this.messagesService.showErrors(message);
-        console.log(message, err);
         return throwError(err);
       })
     );
