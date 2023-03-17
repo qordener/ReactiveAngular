@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   OnInit,
@@ -10,7 +11,6 @@ import { Course } from '../model/course';
 import {
   debounceTime,
   distinctUntilChanged,
-  startWith,
   tap,
   delay,
   map,
@@ -20,6 +20,7 @@ import {
   concatAll,
   shareReplay,
   catchError,
+  startWith,
 } from 'rxjs/operators';
 import {
   merge,
@@ -41,6 +42,7 @@ interface CourseData {
   selector: 'course',
   templateUrl: './course.component.html',
   styleUrls: ['./course.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CourseComponent implements OnInit {
   data$: Observable<CourseData>;
@@ -52,15 +54,20 @@ export class CourseComponent implements OnInit {
   ngOnInit() {
     const courseId = parseInt(this.route.snapshot.paramMap.get('courseId'));
 
-    const course$ = this.coursesService.loadCourseById(courseId);
+    const course$ = this.coursesService
+      .loadCourseById(courseId)
+      .pipe(startWith<null, null>(null));
 
-    const lessons$ = this.coursesService.loadAllCourseLessons(courseId);
+    const lessons$ = this.coursesService
+      .loadAllCourseLessons(courseId)
+      .pipe(startWith([]));
 
     this.data$ = combineLatest([course$, lessons$]).pipe(
       map(([course, lessons]) => ({
         course,
         lessons,
-      }))
+      })),
+      tap(console.log)
     );
   }
 }
